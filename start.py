@@ -15,12 +15,11 @@ class BTC(tk.Tk): #Inheritence from tk.Tk
 
         self.frames = {}
 
-        frame = StartPage(container, self)
-
-        self.frames[StartPage] = frame
-
-        frame.grid(row=0, column=0, sticky="nsew") #sticky: alignment + stretch, north,south,east,west. Stretch to size of window
-
+        for F in (StartPage, PageOne, PageTwo):
+            frame = F(container, self)
+            self.frames[F] = frame
+            frame.grid(row=0, column=0, sticky="nsew") 
+        
         self.show_frame(StartPage)
     
     def show_frame(self, cont):
@@ -33,6 +32,38 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Start Page", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
+
+        button1 = tk.Button(self, text="Visit Page 1", command=lambda: controller.show_frame(PageOne))
+        button1.pack()
+
+        button2 = tk.Button(self, text="Visit Page 2", command=lambda: controller.show_frame(PageTwo))
+        button2.pack()
+
+class PageOne(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="Visit Page 1", font=LARGE_FONT)
+        label.pack(pady=10,padx=10)
+
+        button1 = tk.Button(self, text="Back to home", command=lambda: controller.show_frame(StartPage))
+        button1.pack()
+
+        button2 = tk.Button(self, text="Visit Page 2", command=lambda: controller.show_frame(PageTwo))
+        button2.pack()
+
+class PageTwo(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="Visit Page 2", font=LARGE_FONT)
+        label.pack(pady=10,padx=10)
+
+        button1 = tk.Button(self, text="Back to home", command=lambda: controller.show_frame(StartPage))
+        button1.pack()
+
+        button2 = tk.Button(self, text="Visit Page 1", command=lambda: controller.show_frame(PageOne))
+        button2.pack()
 
 app = BTC()
 app.mainloop()
