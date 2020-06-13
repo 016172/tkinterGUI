@@ -3,12 +3,34 @@ matplotlib.use("TkAgg")
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
+import matplotlib.animation as animation
+from matplotlib import style
 
 import tkinter as tk
 from tkinter import ttk
 
 
+
 LARGE_FONT = ("Verdana", 12)
+style.use("ggplot")
+
+f = Figure(figsize=(5,5), dpi=100)
+a = f.add_subplot(111)
+
+def animate(i):
+    pullData = open("sampleData.txt","r").read()
+    dataList = pullData.split('\n')
+    xList = []
+    yList = []
+    for eachLine in dataList:
+        if len(eachLine)>1:
+            x,y = eachLine.split(',')
+            xList.append(int(x))
+            yList.append(int(y))
+    
+    a.clear()
+    a.plot(xList,yList)
+    
 
 class BTC(tk.Tk): #Inheritence from tk.Tk
 
@@ -96,10 +118,6 @@ class PageThree(tk.Frame):
         button1 = ttk.Button(self, text="Back to home", command=lambda: controller.show_frame(StartPage))
         button1.pack()
 
-        f = Figure(figsize=(5,5), dpi=100)
-        a = f.add_subplot(111)
-        a.plot([1,2,3,4,5,6,7,8],[5,6,1,3,8,9,3,5])
-
         canvas = FigureCanvasTkAgg(f, self)
         canvas.draw()
         toolbar = NavigationToolbar2Tk(canvas, self)
@@ -109,5 +127,6 @@ class PageThree(tk.Frame):
 
 
 app = BTC()
+ani = animation.FuncAnimation(f, animate, interval=1000)
 app.mainloop()
 
