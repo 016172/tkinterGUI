@@ -9,28 +9,44 @@ from matplotlib import style
 import tkinter as tk
 from tkinter import ttk
 
+import requests
+from requests import Request, Session
+from requests.exceptions import ConnectionError, Timeout, TooManyRedirects
+import json
+import urllib
+import pandas as pd
+import numpy as np
 
-
+TICKER_API_URL = "'https://sandbox-api.coinmarketcap.com/v1/cryptocurrency/listings/latest/"
 LARGE_FONT = ("Verdana", 12)
 style.use("ggplot")
 
 f = Figure(figsize=(5,5), dpi=100)
 a = f.add_subplot(111)
 
+dataPointsY = []
+dataPointsX = []
+
 def animate(i):
-    pullData = open("sampleData.txt","r").read()
-    dataList = pullData.split('\n')
-    xList = []
-    yList = []
-    for eachLine in dataList:
-        if len(eachLine)>1:
-            x,y = eachLine.split(',')
-            xList.append(int(x))
-            yList.append(int(y))
-    
+    dataLink = "https://api.coindesk.com/v1/bpi/currentprice.json"
+    html = urllib.request.urlopen(dataLink).read()
+    data = json.loads(html.decode('utf-8'))
+    price = float((data['bpi']['USD']['rate']).replace(',', ""))
+    time = data['time']['updated'].split(' ')[3]
+    if len(dataPointsY) > 1:
+         previous = dataPointsY[len(dataPointsY)-1]
+         previousTime = dataPointsX[len(dataPointsX)-1]
+         if not previous == price:
+             dataPointsY.append(price)
+             dataPointsX.append(time)
+    else:
+        dataPointsY.append(price)
+        dataPointsX.append(time)
+
+    print(dataPointsY)
     a.clear()
-    a.plot(xList,yList)
-    
+    a.plot(dataPointsX,dataPointsY)
+
 
 class BTC(tk.Tk): #Inheritence from tk.Tk
 
@@ -49,7 +65,7 @@ class BTC(tk.Tk): #Inheritence from tk.Tk
 
         self.frames = {}
 
-        for F in (StartPage, PageOne, PageTwo, PageThree):
+        for F in (StartPage, BTC_Page):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew") 
@@ -64,17 +80,14 @@ class StartPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Start Page", font=LARGE_FONT)
+        label = tk.Label(self, text="ALPHA BTC TRACKER", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
 
-        button1 = ttk.Button(self, text="Visit Page 1", command=lambda: controller.show_frame(PageOne))
+        button1 = ttk.Button(self, text="Agree", command=lambda: controller.show_frame(BTC_Page))
         button1.pack()
 
-        button2 = ttk.Button(self, text="Visit Page 2", command=lambda: controller.show_frame(PageTwo))
+        button2 = ttk.Button(self, text="Disagree", command=quit)
         button2.pack()
-
-        button3 = ttk.Button(self, text="Visit Page 3", command=lambda: controller.show_frame(PageThree))
-        button3.pack()
 
 class PageOne(tk.Frame):
 
@@ -86,29 +99,7 @@ class PageOne(tk.Frame):
         button1 = ttk.Button(self, text="Back to home", command=lambda: controller.show_frame(StartPage))
         button1.pack()
 
-        button2 = ttk.Button(self, text="Visit Page 2", command=lambda: controller.show_frame(PageTwo))
-        button2.pack()
-
-        button3 = ttk.Button(self, text="Visit Page 3", command=lambda: controller.show_frame(PageThree))
-        button3.pack()
-
-class PageTwo(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Page 2", font=LARGE_FONT)
-        label.pack(pady=10,padx=10)
-
-        button1 = ttk.Button(self, text="Back to home", command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-
-        button2 = ttk.Button(self, text="Visit Page 1", command=lambda: controller.show_frame(PageOne))
-        button2.pack()
-
-        button3 = ttk.Button(self, text="Visit Page 3", command=lambda: controller.show_frame(PageThree))
-        button3.pack()
-
-class PageThree(tk.Frame):
+class BTC_Page(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -127,6 +118,9 @@ class PageThree(tk.Frame):
 
 
 app = BTC()
-ani = animation.FuncAnimation(f, animate, interval=1000)
+ani = animation.FuncAnimation(f, animate, interval=2500)
 app.mainloop()
 
+
+
+#https://cex.io/rest-api
