@@ -28,25 +28,28 @@ dataPointsY = []
 dataPointsX = []
 
 def animate(i):
-    dataLink = "https://api.coindesk.com/v1/bpi/currentprice.json"
-    html = urllib.request.urlopen(dataLink).read()
-    data = json.loads(html.decode('utf-8'))
-    price = float((data['bpi']['USD']['rate']).replace(',', ""))
-    time = data['time']['updated'].split(' ')[3]
-    if len(dataPointsY) > 1:
-         previous = dataPointsY[len(dataPointsY)-1]
-         previousTime = dataPointsX[len(dataPointsX)-1]
-         if not previous == price:
-             dataPointsY.append(price)
-             dataPointsX.append(time)
-    else:
-        dataPointsY.append(price)
-        dataPointsX.append(time)
+    url = "https://cex.io/api/trade_history/BTC/USD"
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    html = urllib.request.urlopen(req).read()
+    data = json.loads(html)
+    data = pd.DataFrame(data)
+    #print(min(data["date"]))
+    print(data)
+   
+   
+    buys = data[(data['type']=="buy")]
+    buys["datestamp"] = np.array(buys["date"]).astype("datetime64[s]")
+    buyDates = (buys["datestamp"]).tolist()
+    
 
-    print(dataPointsY)
+    sells = data[(data['type']=="sell")]
+    sells["datestamp"] = np.array(sells["date"]).astype("datetime64[s]")
+    sellDates = (sells["datestamp"]).tolist()
+
     a.clear()
-    a.plot(dataPointsX,dataPointsY)
 
+    a.plot_date(buyDates, buys["price"])
+    a.plot_date(sellDates, sells["price"])
 
 class BTC(tk.Tk): #Inheritence from tk.Tk
 
@@ -118,9 +121,9 @@ class BTC_Page(tk.Frame):
 
 
 app = BTC()
-ani = animation.FuncAnimation(f, animate, interval=2500)
+ani = animation.FuncAnimation(f, animate, interval=5000)
 app.mainloop()
 
 
 
-#https://cex.io/rest-api
+#https://cex.io/api/trade_history/BTC/USD, perfect to use!!
