@@ -81,6 +81,8 @@ def animate(i):
     title ="BTC/USD Prices\nLast Price: " + str(data["price"][len(data)-1])
     a.set_title(title)
 
+    #csticks = candlestick_ohlc(a, OHLC[["MPLDates","open","high","low","close"]].values, width = candleWidth, colorup=lightColor, colordown=darkColor)
+
 class BTC(tk.Tk): #Inheritence from tk.Tk
 
     def __init__(self,*args, **kwargs):
